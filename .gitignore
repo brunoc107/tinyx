@@ -1,6 +1,7 @@
 build
 sysroot
 **/*.a
+**/*.bin
 **/*.d
 **/*.o
 **/*.kernel
