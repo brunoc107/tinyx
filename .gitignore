@@ -1,0 +1,6 @@
+build
+sysroot
+**/*.a
+**/*.d
+**/*.o
+**/*.kernel
