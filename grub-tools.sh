@@ -1,17 +1,17 @@
 #!/bin/sh
 
-get_grub_file_command() {
+grub_file () {
     if command -v "grub-file" &>/dev/null; then
-        echo "grub-file"
+        grub-file $1 $2
     elif command -v "grub2-file" &>/dev/null; then
-        echo "grub2-file"
+        grub2-file $1 $2
     fi
 }
 
-get_grub_mkrescue_command() {
+grub_mkrescue () {
     if command -v "grub-file" &>/dev/null; then
-        echo "grub-mkrescue"
+        grub-mkrescue $@
     elif command -v "grub2-file" &>/dev/null; then
-        echo "grub2-mkrescue"
+        grub2-mkrescue $@
     fi
 }

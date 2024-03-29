@@ -6,5 +6,5 @@ set -e
 mkdir -p build/isofiles/boot/grub
 cp grub.cfg build/isofiles/boot/grub
 cp sysroot/boot/myos.kernel build/isofiles/boot/
-$(get_grub_mkrescue_command) -o build/os.iso build/isofiles
+grub_mkrescue -o build/os.iso build/isofiles
 
