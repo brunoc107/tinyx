@@ -12,6 +12,8 @@ extern "C" {
 
 int vsprintf(char*, const char* __restrict, ...);
 int printf(const char* __restrict, ...);
+int serial_printf(const char* __restrict, ...);
+char * format_string(char*, const char* __restrict, ...);
 
 #ifdef __cplusplus
 }

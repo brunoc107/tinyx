@@ -36,6 +36,8 @@ string/memset.o \
 string/strlen.o \
 stdio/vsprintf.o \
 stdio/printf.o \
+stdio/serial_printf.o \
+stdio/format.o \
 # stdio/putchar.o \
 # stdio/puts.o \
 # stdlib/abort.o \

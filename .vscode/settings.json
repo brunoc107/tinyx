@@ -1,0 +1,10 @@
+{
+  "files.associations": {
+    "cctype": "c",
+    "stddef.h": "c",
+    "tty.h": "c",
+    "varargs.h": "c",
+    "system_error": "c",
+    "stdarg.h": "c"
+  }
+}
