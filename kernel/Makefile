@@ -1,6 +1,7 @@
 DEFAULT_HOST!=../default-host.sh
 HOST?=DEFAULT_HOST
 HOSTARCH!=../target-triplet-to-arch.sh $(HOST)
+NASM_FORMAT!=../nasm-format.sh $(HOSTARCH)
 
 CFLAGS?=-O2 -g
 CPPFLAGS?=
@@ -48,7 +49,7 @@ all: kernel.bin
 
 kernel.bin: $(OBJS) $(ARCHDIR)/linker.ld
 	$(CC) -T $(ARCHDIR)/linker.ld -o $@ $(CFLAGS) $(LINK_LIST)
-	./check-multiboot.sh kernel.bin
+	./check-multiboot.sh $(HOSTARCH) kernel.bin
 
 $(ARCHDIR)/crtbegin.o $(ARCHDIR)/crtend.o:
 	OBJ=`$(CC) $(CFLAGS) $(LDFLAGS) -print-file-name=$(@F)` && cp "$$OBJ" $@
@@ -60,7 +61,7 @@ $(ARCHDIR)/crtbegin.o $(ARCHDIR)/crtend.o:
 	$(CC) -MD -c $< -o $@ $(CFLAGS) $(CPPFLAGS)
 
 .asm.o:
-	$(NASM) -f elf64 $< -o $@
+	$(NASM) -f $(NASM_FORMAT) $< -o $@
 
 clean:
 	rm -f kernel.bin
