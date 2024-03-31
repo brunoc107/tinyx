@@ -10,6 +10,7 @@
 
 void kmain(void) {
   configure();
+  printf("tinyx 0.01\n");
 
   // tmp test routine
   char serial_data[1024];
