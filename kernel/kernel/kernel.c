@@ -18,6 +18,7 @@ void kmain(void) {
     if (serial_readstring(COM1, serial_data, 1024)) {
       printf("COM1: %s\n", serial_data);
       log(INFO, "Received: %s", serial_data);
+      __asm__ volatile ("int $0x3");
     }
   }
 

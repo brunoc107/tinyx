@@ -2,6 +2,9 @@
 [GLOBAL start]                  ; Kernel entry point.
 [EXTERN kmain]                  ; This is the entry point of our C code
 
+[EXTERN PIC_remap]
+[EXTERN PIC_enable_irq]
+
 KERNEL_VIRTUAL_BASE equ 0xc0000000                  ; Constant that declares the base of a HigherHalf kernel
 KERNEL_PAGE_TABLE   equ (KERNEL_VIRTUAL_BASE >> 22) ; Constant declaring page table index in virtual memory
 
@@ -43,6 +46,43 @@ GDT_flush:
 continue:
   ret
 ; ######################################## GDT end ########################################
+
+; ####################################### IDT begin #######################################
+IDT_entries_start: 
+TIMES 2048 db 0
+IDT_entries_end:
+
+IDT_pointer db 0xff, 0x7, 0, 0, 0, 0
+
+[extern common_interrupt_handler]
+
+; Interrupt handler macro
+%macro common_interrupt_handler_macro 1
+[GLOBAL common_interrupt_handler_macro%1:function]
+  common_interrupt_handler_stub%1:
+    pushad
+    push dword %1
+    call common_interrupt_handler
+    add esp, 4
+    popad
+    iret
+%endmacro
+
+; IDT entry configuration macro
+%macro config_idt_entry 1
+  mov dword eax, common_interrupt_handler_stub%1 ; Load address of interrupt handler 
+  mov byte [ebx], al                        ; Store byte 0 of address of interrupt handler
+  mov byte [ebx+1], ah                      ; Store byte 1 of address of interrupt handler
+  shr dword eax, 0x10                       ; Shift right 16 bits to make the high 2 bytes of the address accessible
+  mov byte [ebx+6], al                      ; Store byte 2 of address of interrupt handler
+  mov byte [ebx+7], ah                      ; Store byte 3 of address of interrupt handler
+  mov word [ebx+2], 0x8                     ; Code segment selector of handler to kernel mode code segment
+  mov byte [ebx+4], 0x0                     ; Set high byte of code segment selector to 0
+  mov byte [ebx+5], 0x8e                    ; Set handler flags: 0x8- = set present bit, DPL = 0, 0x-E = interrupt gate handler
+  add ebx, 8                                ; Move to next entry
+%endmacro
+
+; ######################################## IDT end ########################################
 
 start:
   cli
@@ -110,13 +150,41 @@ start:
   mov cr0, eax
   ; ###################################### PAGING end #######################################
 
+  ; ################################### IDT setup begin #####################################
+  mov dword ebx, IDT_entries_start
+  %assign IDT_setup 0
+  %rep 256
+    config_idt_entry IDT_setup
+    %assign IDT_setup IDT_setup + 1
+  %endrep
+  mov dword [IDT_pointer + 2], IDT_entries_start
+  mov dword eax, IDT_pointer
+  lidt [EAX]
+  ; ################################### IDT setup end #####################################
+
+  ; ##################################### PIC remap #######################################
+  call PIC_remap
+
+  mov ecx, 0
+  call PIC_enable_irq
+  ; ################################### PIC remap end #####################################
+
   ; Execute the kernel:
+  sti
   lea eax, [kmain - KERNEL_VIRTUAL_BASE]
   call eax                    ; call our main() function.
   jmp $                       ; Enter an infinite loop, to stop the processor
                               ; executing whatever rubbish is in the memory
                               ; after our kernel!
 
+  ; generating interrupt handlers
+  %assign handler_num 0
+  %rep 256
+    common_interrupt_handler_macro handler_num
+    %assign handler_num handler_num+1
+  %endrep
+
+; If the multiboot validation failed
 mb_fail:
   ; BEGIN Red screen of death?
   mov dword eax, 0x4f20  ; bg: 4 = red, fg: f = white
