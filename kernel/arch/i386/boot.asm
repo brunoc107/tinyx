@@ -165,6 +165,7 @@ start:
   ; ##################################### PIC remap #######################################
   call PIC_remap
 
+  ; Enabling PIT interruptions
   mov ecx, 0
   call PIC_enable_irq
   ; ################################### PIC remap end #####################################

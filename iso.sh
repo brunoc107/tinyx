@@ -19,6 +19,9 @@ fi
 
 mkdir -p build/isofiles/boot/grub
 cat > grub.cfg << EOF
+set timeout=0
+set default=0
+
 menuentry "tinyx" {
   $MULTIBOOT /boot/kernel.bin
   boot
